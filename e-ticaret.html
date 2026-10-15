@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>E-Ticaret Yönetim Sistemi</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<style>
+:root{
+  --font-sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --font-mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --border-radius-md:8px;--border-radius-lg:12px;
+  --color-background-primary:#ffffff;--color-background-secondary:#f5f5f4;
+  --color-border-secondary:rgba(0,0,0,.3);--color-border-tertiary:rgba(0,0,0,.15);
+  --color-text-primary:#1a1a1a;--color-text-secondary:#5f5e5a;--color-text-tertiary:#888780;
+}
+body{max-width:1200px;margin:0 auto;padding:1rem}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap}
+</style>
+</head>
+<body>
+
+<h2 class="sr-only">E-Ticaret Yönetim Sistemi</h2>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.2/sql-wasm.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-sans);color:var(--color-text-primary)}
+.app{padding:.5rem 0}
+
+.topbar{display:flex;align-items:center;gap:10px;padding:1rem 1.25rem;background:#185FA5;border-radius:var(--border-radius-lg);margin-bottom:1rem}
+.topbar-icon{width:36px;height:36px;background:#378ADD;border-radius:var(--border-radius-md);display:flex;align-items:center;justify-content:center;color:#fff;font-size:18px}
+.topbar-title{font-size:15px;font-weight:500;color:#fff;flex:1}
+.topbar-sub{font-size:11px;color:#B5D4F4}
+
+.nav{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:1rem}
+.nb{display:flex;align-items:center;gap:5px;padding:7px 12px;border-radius:var(--border-radius-md);font-size:13px;cursor:pointer;border:none;background:var(--color-background-primary);color:var(--color-text-secondary);border:0.5px solid var(--color-border-tertiary);transition:all .15s}
+.nb:hover{background:var(--color-background-secondary)}
+.nb.a0{background:#185FA5;color:#E6F1FB;border-color:#185FA5}
+.nb.a1{background:#085041;color:#E1F5EE;border-color:#085041}
+.nb.a2{background:#854F0B;color:#FAEEDA;border-color:#854F0B}
+.nb.a3{background:#712B13;color:#FAECE7;border-color:#712B13}
+.nb.a4{background:#27500A;color:#EAF3DE;border-color:#27500A}
+.nb.a5{background:#3C3489;color:#EEEDFE;border-color:#3C3489}
+
+.panel{display:none}.panel.active{display:block}
+
+.metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-bottom:1rem}
+.mc{border-radius:var(--border-radius-lg);padding:.9rem 1rem}
+.mc.blue {background:#E6F1FB}.mc.teal {background:#E1F5EE}.mc.amber{background:#FAEEDA}
+.mc.coral{background:#FAECE7}.mc.purple{background:#EEEDFE}.mc.green{background:#EAF3DE}
+.mc.red  {background:#FCEBEB}.mc.pink {background:#FBEAF0}
+.mc .lbl{font-size:11px;font-weight:500}
+.mc.blue  .lbl{color:#185FA5}.mc.teal  .lbl{color:#085041}.mc.amber .lbl{color:#854F0B}
+.mc.coral .lbl{color:#712B13}.mc.purple.lbl,.mc.purple .lbl{color:#3C3489}.mc.green .lbl{color:#27500A}
+.mc.red   .lbl{color:#A32D2D}.mc.pink  .lbl{color:#72243E}
+.mc .val{font-size:22px;font-weight:500;margin:3px 0}
+.mc.blue  .val{color:#0C447C}.mc.teal  .val{color:#04342C}.mc.amber .val{color:#633806}
+.mc.coral .val{color:#4A1B0C}.mc.purple .val{color:#26215C}.mc.green .val{color:#173404}
+.mc.red   .val{color:#501313}.mc.pink  .val{color:#4B1528}
+.mc .sub{font-size:11px;color:var(--color-text-tertiary)}
+
+.card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:1rem 1.25rem;margin-bottom:1rem}
+.card-head{display:flex;align-items:center;gap:8px;margin-bottom:12px}
+.card-head-icon{width:28px;height:28px;border-radius:var(--border-radius-md);display:flex;align-items:center;justify-content:center;font-size:15px}
+.card-title{font-size:14px;font-weight:500}
+.card-sub{font-size:12px;color:var(--color-text-secondary);margin-left:auto}
+
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead tr{background:var(--color-background-secondary)}
+th{text-align:left;padding:8px 10px;font-size:11px;font-weight:500;color:var(--color-text-secondary);border-bottom:0.5px solid var(--color-border-tertiary)}
+td{padding:8px 10px;border-bottom:0.5px solid var(--color-border-tertiary);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:var(--color-background-secondary)}
+
+.badge{display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:500}
+.bs{background:#E1F5EE;color:#085041}.bi{background:#E6F1FB;color:#0C447C}
+.bw{background:#FAEEDA;color:#633806}.bd{background:#FCEBEB;color:#791F1F}
+.bn{background:#F1EFE8;color:#444441}.bp{background:#EEEDFE;color:#3C3489}
+.bc{background:#FAECE7;color:#712B13}
+
+.search{width:100%;padding:8px 12px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:var(--color-background-secondary);color:var(--color-text-primary);font-size:13px;margin-bottom:12px;font-family:var(--font-sans)}
+.search:focus{outline:none;border-color:#378ADD}
+select{padding:7px 10px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:var(--color-background-secondary);color:var(--color-text-primary);font-size:13px;font-family:var(--font-sans)}
+
+.avatar{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:500;flex-shrink:0}
+.row-flex{display:flex;align-items:center;gap:8px}
+
+.progress-bar{width:100%;background:var(--color-background-secondary);border-radius:3px;height:5px;overflow:hidden}
+.progress-fill{height:5px;border-radius:3px}
+
+.ktrack{display:flex;gap:4px;margin:6px 0}
+.kstep{flex:1;height:5px;border-radius:3px;background:#F1EFE8}
+.kstep.done{background:#639922}.kstep.active{background:#378ADD}
+
+.form-group{margin-bottom:12px}
+.form-group label{display:block;font-size:12px;color:var(--color-text-secondary);margin-bottom:4px}
+.form-group input,.form-group select,.form-group textarea{width:100%;padding:8px 10px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:var(--color-background-secondary);color:var(--color-text-primary);font-size:13px;font-family:var(--font-sans)}
+
+.btn{padding:8px 16px;border-radius:var(--border-radius-md);font-size:13px;cursor:pointer;font-family:var(--font-sans);border:none;display:inline-flex;align-items:center;gap:6px}
+.btn-blue{background:#185FA5;color:#E6F1FB}.btn-blue:hover{background:#0C447C}
+.btn-teal{background:#085041;color:#E1F5EE}.btn-teal:hover{background:#04342C}
+
+.sbar{padding:8px 12px;border-radius:var(--border-radius-md);font-size:13px;margin-bottom:10px}
+.sok{background:#E1F5EE;color:#085041}.serr{background:#FCEBEB;color:#791F1F}
+
+.kargo-card{border-radius:var(--border-radius-md);padding:12px;margin-bottom:10px;border-left:4px solid}
+.kc-blue{background:#E6F1FB;border-color:#378ADD}.kc-green{background:#EAF3DE;border-color:#639922}
+.kc-amber{background:#FAEEDA;border-color:#EF9F27}.kc-gray{background:#F1EFE8;border-color:#888780}
+
+.loading{text-align:center;padding:3rem;color:var(--color-text-secondary)}
+.empty{text-align:center;padding:2rem;color:var(--color-text-secondary);font-size:13px}
+.tbl-wrap{overflow-x:auto}
+
+.urun-stok-bar-wrap{display:flex;align-items:center;gap:6px}
+</style>
+
+<div class="app">
+  <div class="loading" id="loading"><i class="ti ti-loader" style="font-size:22px;display:block;margin:0 auto 8px" aria-hidden="true"></i>Sistem yükleniyor...</div>
+  <div id="main" style="display:none">
+
+    <div class="topbar">
+      <div class="topbar-icon"><i class="ti ti-shopping-cart" aria-hidden="true"></i></div>
+      <div>
+        <div class="topbar-title">E-Ticaret Yönetim Sistemi</div>
+        <div class="topbar-sub">SQLite · 8 tablo · 3 trigger · 5 view · 50+ kayıt</div>
+      </div>
+    </div>
+
+    <div class="nav" id="nav">
+      <button class="nb a0" onclick="goTab(0,this)"><i class="ti ti-layout-dashboard" aria-hidden="true"></i>Özet</button>
+      <button class="nb" onclick="goTab(1,this)"><i class="ti ti-users" aria-hidden="true"></i>Müşteriler</button>
+      <button class="nb" onclick="goTab(2,this)"><i class="ti ti-box" aria-hidden="true"></i>Stok</button>
+      <button class="nb" onclick="goTab(3,this)"><i class="ti ti-receipt" aria-hidden="true"></i>Siparişler</button>
+      <button class="nb" onclick="goTab(4,this)"><i class="ti ti-truck" aria-hidden="true"></i>Kargo</button>
+      <button class="nb" onclick="goTab(5,this)"><i class="ti ti-plus" aria-hidden="true"></i>Yeni Sipariş</button>
+    </div>
+
+    <div id="p0" class="panel active"></div>
+    <div id="p1" class="panel"></div>
+    <div id="p2" class="panel"></div>
+    <div id="p3" class="panel"></div>
+    <div id="p4" class="panel"></div>
+    <div id="p5" class="panel"></div>
+  </div>
+</div>
+
+<script>
+let db;
+const AV_COLORS=[['#E6F1FB','#0C447C'],['#E1F5EE','#085041'],['#FAEEDA','#633806'],['#FAECE7','#712B13'],['#EEEDFE','#3C3489'],['#EAF3DE','#27500A'],['#FBEAF0','#72243E'],['#FCEBEB','#791F1F']];
+function ava(n,i){const[bg,tx]=AV_COLORS[i%8];return`<div class="avatar" style="background:${bg};color:${tx}">${n[0]}</div>`}
+function q(sql){try{const r=db.exec(sql);return r.length?r[0]:{columns:[],values:[]}}catch(e){return{columns:[],values:[]}}}
+function qv(sql,d=0){try{const r=db.exec(sql);return r.length&&r[0].values.length?r[0].values[0][0]:d}catch{return d}}
+function fmt(n){return n==null?'—':Number(n).toLocaleString('tr-TR',{style:'currency',currency:'TRY',minimumFractionDigits:0})}
+
+function durBadge(d){
+  const m={'Teslim Edildi':'bs','Kargoda':'bi','Onaylandi':'bi','Beklemede':'bw','Iptal Edildi':'bd'};
+  const ic={'Teslim Edildi':'ti-check','Kargoda':'ti-truck','Onaylandi':'ti-circle-check','Beklemede':'ti-clock','Iptal Edildi':'ti-x'};
+  return`<span class="badge ${m[d]||'bn'}"><i class="ti ${ic[d]||'ti-point'}" aria-hidden="true"></i>${d}</span>`;
+}
+function stokBadge(s,mn){
+  if(s===0)return'<span class="badge bd"><i class="ti ti-alert-triangle" aria-hidden="true"></i>Tükendi</span>';
+  if(s<=mn)return'<span class="badge bd"><i class="ti ti-alert-circle" aria-hidden="true"></i>Kritik</span>';
+  if(s<=mn*2)return'<span class="badge bw"><i class="ti ti-alert" aria-hidden="true"></i>Düşük</span>';
+  return'<span class="badge bs"><i class="ti ti-check" aria-hidden="true"></i>Yeterli</span>';
+}
+function kSteps(d){const s=['Beklemede','Onaylandi','Kargoda','Teslim Edildi'];const idx=s.indexOf(d);return s.map((_,i)=>`<div class="kstep ${i<idx?'done':i===idx?'active':''}"></div>`).join('')}
+function kCardClass(d){return{'Kargoda':'kc-blue','Teslim Edildi':'kc-green','Onaylandi':'kc-amber','Beklemede':'kc-gray'}[d]||'kc-gray'}
+
+async function initDB(){
+  try{
+    const SQL=await initSqlJs({locateFile:f=>`https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.2/${f}`});
+    db=new SQL.Database();
+    buildSchema();buildTriggers();buildData();
+    document.getElementById('loading').style.display='none';
+    document.getElementById('main').style.display='block';
+    renderAll();
+  }catch(e){document.getElementById('loading').textContent='Hata: '+e.message}
+}
+
+function ex(sql){try{db.run(sql)}catch(e){console.warn(e.message)}}
+function buildSchema(){
+  ex(`CREATE TABLE Musteriler(musteri_id INTEGER PRIMARY KEY AUTOINCREMENT,ad TEXT,soyad TEXT,email TEXT UNIQUE,telefon TEXT,sehir TEXT,aktif INTEGER DEFAULT 1,kayit_tarihi DATE DEFAULT(date('now')))`);
+  ex(`CREATE TABLE Kategoriler(kategori_id INTEGER PRIMARY KEY AUTOINCREMENT,kategori_adi TEXT UNIQUE)`);
+  ex(`CREATE TABLE Tedarikci(tedarikci_id INTEGER PRIMARY KEY AUTOINCREMENT,firma_adi TEXT)`);
+  ex(`CREATE TABLE Urunler(urun_id INTEGER PRIMARY KEY AUTOINCREMENT,urun_adi TEXT,kategori_id INTEGER,tedarikci_id INTEGER,birim_fiyat REAL,stok_miktari INTEGER DEFAULT 0,min_stok INTEGER DEFAULT 10)`);
+  ex(`CREATE TABLE KargoFirmalari(kargo_id INTEGER PRIMARY KEY AUTOINCREMENT,firma_adi TEXT)`);
+  ex(`CREATE TABLE Siparisler(siparis_id INTEGER PRIMARY KEY AUTOINCREMENT,musteri_id INTEGER,siparis_tarihi DATETIME DEFAULT(datetime('now')),durum TEXT DEFAULT'Beklemede',kargo_id INTEGER,takip_no TEXT,toplam_tutar REAL DEFAULT 0,teslim_adresi TEXT)`);
+  ex(`CREATE TABLE Siparis_Detaylari(detay_id INTEGER PRIMARY KEY AUTOINCREMENT,siparis_id INTEGER,urun_id INTEGER,miktar INTEGER,birim_fiyat REAL,indirim_yuzdesi REAL DEFAULT 0)`);
+  ex(`CREATE TABLE Odemeler(odeme_id INTEGER PRIMARY KEY AUTOINCREMENT,siparis_id INTEGER,tutar REAL,yontem TEXT,durum TEXT DEFAULT'Basarili')`);
+}
+function buildTriggers(){
+  ex(`CREATE TRIGGER trg_stok_kontrol BEFORE INSERT ON Siparis_Detaylari BEGIN SELECT CASE WHEN(SELECT stok_miktari FROM Urunler WHERE urun_id=NEW.urun_id)<NEW.miktar THEN RAISE(ABORT,'Yetersiz stok!') END;END`);
+  ex(`CREATE TRIGGER trg_stok_dusur AFTER INSERT ON Siparis_Detaylari BEGIN UPDATE Urunler SET stok_miktari=stok_miktari-NEW.miktar WHERE urun_id=NEW.urun_id;END`);
+  ex(`CREATE TRIGGER trg_tutar AFTER INSERT ON Siparis_Detaylari BEGIN UPDATE Siparisler SET toplam_tutar=(SELECT ROUND(SUM(miktar*birim_fiyat*(1-indirim_yuzdesi/100.0)),2)FROM Siparis_Detaylari WHERE siparis_id=NEW.siparis_id)WHERE siparis_id=NEW.siparis_id;END`);
+}
+function buildData(){
+  [['Ahmet','Yılmaz','ahmet@email.com','0532-111-0001','İstanbul'],['Fatma','Kaya','fatma@email.com','0533-222-0002','Ankara'],['Mehmet','Demir','mehmet@email.com','0534-333-0003','İzmir'],['Ayşe','Çelik','ayse@email.com','0535-444-0004','Bursa'],['Ali','Şahin','ali@email.com','0536-555-0005','Antalya'],['Zeynep','Arslan','zeynep@email.com','0537-666-0006','Adana'],['Mustafa','Koç','mustafa@email.com','0538-777-0007','Konya'],['Elif','Erdoğan','elif@email.com','0539-888-0008','Trabzon'],['Hüseyin','Aydın','huseyin@email.com','0530-999-0009','Kayseri'],['Merve','Doğan','merve@email.com','0531-010-0010','Eskişehir'],['Osman','Yıldız','osman@email.com','0532-121-0011','Samsun'],['Hatice','Öztürk','hatice@email.com','0533-232-0012','Diyarbakır']].forEach((m,i)=>ex(`INSERT INTO Musteriler(ad,soyad,email,telefon,sehir,kayit_tarihi)VALUES('${m[0]}','${m[1]}','${m[2]}','${m[3]}','${m[4]}',date('now','-${(12-i)*30} days'))`));
+  ['Elektronik','Telefon & Tablet','Bilgisayar','Giyim','Ev & Yaşam','Spor','Kitap'].forEach(k=>ex(`INSERT INTO Kategoriler(kategori_adi)VALUES('${k}')`));
+  ['TechDist A.Ş.','ModaHolding','EvGereçleri Ltd.','SportWorld'].forEach(t=>ex(`INSERT INTO Tedarikci(firma_adi)VALUES('${t}')`));
+  ['Aras Kargo','Yurtiçi Kargo','PTT Kargo','MNG Kargo','Sürat Kargo'].forEach(k=>ex(`INSERT INTO KargoFirmalari(firma_adi)VALUES('${k}')`));
+  [['iPhone 15 Pro',2,1,45999,30,5],['Samsung Galaxy S24',2,1,38999,25,5],['iPad Air',2,1,24999,20,5],['MacBook Air M3',3,1,54999,15,3],['Asus ROG',3,1,42000,12,3],['Lenovo ThinkPad',3,1,28500,18,3],['Erkek Pantolon',4,2,599,150,20],['Polo Tişört',4,2,299,200,30],['Kadın Elbise',4,2,799,120,20],['Blazer Ceket',4,2,1299,80,15],['Mutfak Robotu',5,3,3999,8,8],['Kahve Makinesi',5,3,2499,5,10],['Tencere Seti',5,3,1599,60,10],['Koşu Ayakkabısı',6,4,1899,90,15],['Spor Çantası',6,4,699,110,20],['Python Kitabı',7,1,149,200,30],['VT Kitabı',7,1,129,180,30],['AirPods Pro',2,1,6999,45,8],['Akıllı Saat',2,1,8999,35,5],['Kablosuz Kulaklık',2,1,2999,3,10]].forEach(u=>ex(`INSERT INTO Urunler(urun_adi,kategori_id,tedarikci_id,birim_fiyat,stok_miktari,min_stok)VALUES('${u[0]}',${u[1]},${u[2]},${u[3]},${u[4]},${u[5]})`));
+  const durumlar=['Teslim Edildi','Teslim Edildi','Kargoda','Onaylandi','Beklemede','Iptal Edildi'];
+  const adresler=['İstanbul Merkez','Ankara Çankaya','İzmir Konak','Bursa Nilüfer','Antalya Lara'];
+  for(let i=0;i<30;i++){
+    const mid=(i%12)+1,kid=(i%5)+1,dur=durumlar[i%6],adr=adresler[i%5],gun=i*2;
+    ex(`INSERT INTO Siparisler(musteri_id,siparis_tarihi,durum,kargo_id,takip_no,teslim_adresi)VALUES(${mid},date('now','-${gun} days'),'${dur}',${kid},'TRK${100000+i}','${adr}')`);
+    const sid=qv("SELECT last_insert_rowid()");
+    const uid=(i%20)+1,uid2=((i+5)%20)+1;
+    const fp=qv(`SELECT birim_fiyat FROM Urunler WHERE urun_id=${uid}`);
+    try{ex(`INSERT INTO Siparis_Detaylari(siparis_id,urun_id,miktar,birim_fiyat,indirim_yuzdesi)VALUES(${sid},${uid},1,${fp},${i%15})`)}catch(e){}
+    if(uid!==uid2){const fp2=qv(`SELECT birim_fiyat FROM Urunler WHERE urun_id=${uid2}`);try{ex(`INSERT INTO Siparis_Detaylari(siparis_id,urun_id,miktar,birim_fiyat)VALUES(${sid},${uid2},1,${fp2})`)}catch(e){}}
+    if(dur==='Teslim Edildi'){const t=qv(`SELECT toplam_tutar FROM Siparisler WHERE siparis_id=${sid}`);ex(`INSERT INTO Odemeler(siparis_id,tutar,yontem)VALUES(${sid},${t},'Kredi Karti')`)}
+  }
+}
+
+const ACTIVE_CLASS=['a0','a1','a2','a3','a4','a5'];
+let curTab=0;
+function goTab(idx,btn){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nb').forEach(b=>{ACTIVE_CLASS.forEach(c=>b.classList.remove(c))});
+  document.getElementById('p'+idx).classList.add('active');
+  btn.classList.add(ACTIVE_CLASS[idx]);
+  curTab=idx;
+}
+
+function filterTable(id,v){document.querySelectorAll(`#${id} tbody tr`).forEach(r=>{r.style.display=r.textContent.toLowerCase().includes(v.toLowerCase())?'':'none'})}
+function filterCol(id,ci,v){document.querySelectorAll(`#${id} tbody tr`).forEach(r=>{r.style.display=!v||(r.querySelectorAll('td')[ci]?.textContent||'').includes(v)?'':'none'})}
+
+function renderAll(){r0();r1();r2();r3();r4();r5()}
+
+function r0(){
+  const ts=qv("SELECT COUNT(*) FROM Siparisler"),tm=qv("SELECT COUNT(*) FROM Musteriler"),
+    ciro=qv("SELECT ROUND(SUM(toplam_tutar),0) FROM Siparisler WHERE durum!='Iptal Edildi'"),
+    bek=qv("SELECT COUNT(*) FROM Siparisler WHERE durum='Beklemede'"),
+    kar=qv("SELECT COUNT(*) FROM Siparisler WHERE durum='Kargoda'"),
+    tel=qv("SELECT COUNT(*) FROM Siparisler WHERE durum='Teslim Edildi'"),
+    ipt=qv("SELECT COUNT(*) FROM Siparisler WHERE durum='Iptal Edildi'"),
+    krt=qv("SELECT COUNT(*) FROM Urunler WHERE stok_miktari<=min_stok");
+  const sonSip=q("SELECT s.siparis_id,m.ad||' '||m.soyad,s.durum,s.toplam_tutar,s.siparis_tarihi FROM Siparisler s JOIN Musteriler m ON s.musteri_id=m.musteri_id ORDER BY s.siparis_tarihi DESC LIMIT 6");
+  const krtUrun=q("SELECT urun_adi,stok_miktari,min_stok FROM Urunler WHERE stok_miktari<=min_stok*2 ORDER BY stok_miktari ASC LIMIT 5");
+  document.getElementById('p0').innerHTML=`
+  <div class="metrics">
+    <div class="mc blue"><div class="lbl"><i class="ti ti-receipt" aria-hidden="true"></i> Sipariş</div><div class="val">${ts}</div></div>
+    <div class="mc teal"><div class="lbl"><i class="ti ti-users" aria-hidden="true"></i> Müşteri</div><div class="val">${tm}</div></div>
+    <div class="mc amber"><div class="lbl"><i class="ti ti-currency-lira" aria-hidden="true"></i> Ciro</div><div class="val" style="font-size:16px">${Math.round(ciro||0).toLocaleString('tr-TR')} ₺</div></div>
+    <div class="mc coral"><div class="lbl"><i class="ti ti-clock" aria-hidden="true"></i> Bekleyen</div><div class="val">${bek}</div></div>
+    <div class="mc purple"><div class="lbl"><i class="ti ti-truck" aria-hidden="true"></i> Kargoda</div><div class="val">${kar}</div></div>
+    <div class="mc green"><div class="lbl"><i class="ti ti-check" aria-hidden="true"></i> Teslim</div><div class="val">${tel}</div></div>
+    <div class="mc red"><div class="lbl"><i class="ti ti-x" aria-hidden="true"></i> İptal</div><div class="val">${ipt}</div></div>
+    <div class="mc pink"><div class="lbl"><i class="ti ti-alert-triangle" aria-hidden="true"></i> Kritik</div><div class="val">${krt}</div></div>
+  </div>
+  <div class="grid2">
+    <div class="card">
+      <div class="card-head"><div class="card-head-icon" style="background:#E6F1FB;color:#0C447C"><i class="ti ti-receipt" aria-hidden="true"></i></div><span class="card-title">Son Siparişler</span></div>
+      <div class="tbl-wrap"><table><thead><tr><th>#</th><th>Müşteri</th><th>Durum</th><th>Tutar</th></tr></thead><tbody>
+      ${sonSip.values.map(r=>`<tr><td style="color:#185FA5;font-weight:500">#${r[0]}</td><td>${r[1]}</td><td>${durBadge(r[2])}</td><td style="font-weight:500">${fmt(r[3])}</td></tr>`).join('')}
+      </tbody></table></div>
+    </div>
+    <div class="card">
+      <div class="card-head"><div class="card-head-icon" style="background:#FCEBEB;color:#A32D2D"><i class="ti ti-alert-triangle" aria-hidden="true"></i></div><span class="card-title">Kritik Stok</span></div>
+      ${krtUrun.values.length===0?'<div class="empty">Kritik stok yok</div>':krtUrun.values.map(r=>{
+        const pct=Math.min(Math.round((r[1]/(r[2]*3||1))*100),100);
+        const col=r[1]===0?'#E24B4A':r[1]<=r[2]?'#E24B4A':'#BA7517';
+        return`<div style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span>${r[0]}</span><span style="font-weight:500;color:${col}">${r[1]} adet</span></div><div class="progress-bar"><div class="progress-fill" style="width:${pct}%;background:${col}"></div></div></div>`;
+      }).join('')}
+    </div>
+  </div>`;
+}
+
+function r1(){
+  const data=q("SELECT m.musteri_id,m.ad,m.soyad,m.email,m.telefon,m.sehir,m.kayit_tarihi,COUNT(s.siparis_id)AS sip,ROUND(COALESCE(SUM(CASE WHEN s.durum!='Iptal Edildi' THEN s.toplam_tutar ELSE 0 END),0),0)AS hrc,COUNT(CASE WHEN s.durum='Teslim Edildi' THEN 1 END)AS teslim,COUNT(CASE WHEN s.durum='Iptal Edildi' THEN 1 END)AS iptal FROM Musteriler m LEFT JOIN Siparisler s ON m.musteri_id=s.musteri_id GROUP BY m.musteri_id ORDER BY hrc DESC");
+  document.getElementById('p1').innerHTML=`
+  <div class="card">
+    <div class="card-head"><div class="card-head-icon" style="background:#E1F5EE;color:#085041"><i class="ti ti-users" aria-hidden="true"></i></div><span class="card-title">Müşteriler</span><span class="card-sub">${data.values.length} kayıt</span></div>
+    <input class="search" placeholder="İsim, e-posta veya şehir ara..." oninput="filterTable('mt',this.value)">
+    <div class="tbl-wrap"><table id="mt"><thead><tr><th>Müşteri</th><th>E-posta</th><th>Şehir</th><th>Kayıt Tarihi</th><th>Sipariş</th><th>Teslim</th><th>İptal</th><th>Toplam Harcama</th></tr></thead><tbody>
+    ${data.values.map((r,i)=>`<tr style="cursor:pointer" onclick="musGecmis(${r[0]},'${r[1]} ${r[2]}')">
+      <td><div class="row-flex">${ava(r[1],i)}<span style="font-weight:500">${r[1]} ${r[2]}</span></div></td>
+      <td style="color:var(--color-text-secondary);font-size:12px">${r[3]}</td>
+      <td><span class="badge bn">${r[5]||'—'}</span></td>
+      <td style="font-size:12px;color:var(--color-text-secondary)">${(r[6]||'').slice(0,10)}</td>
+      <td><span class="badge bi">${r[7]}</span></td>
+      <td><span class="badge bs">${r[9]}</span></td>
+      <td><span class="badge ${r[10]>0?'bd':'bn'}">${r[10]}</span></td>
+      <td style="font-weight:500;color:#185FA5">${fmt(r[8])}</td>
+    </tr>`).join('')}
+    </tbody></table></div>
+    <div style="font-size:11px;color:var(--color-text-secondary);margin-top:8px"><i class="ti ti-info-circle" aria-hidden="true"></i> Satıra tıklayarak sipariş geçmişi ve ödeme detaylarını görün</div>
+  </div>
+  <div id="mus-detail" style="display:none"></div>`;
+}
+
+function musGecmis(mid, ad){
+  const siparis=q(`SELECT s.siparis_id,s.siparis_tarihi,s.durum,kf.firma_adi,s.takip_no,s.toplam_tutar,s.teslim_adresi FROM Siparisler s LEFT JOIN KargoFirmalari kf ON s.kargo_id=kf.kargo_id WHERE s.musteri_id=${mid} ORDER BY s.siparis_tarihi DESC`);
+  const odemeler=q(`SELECT o.siparis_id,o.tutar,o.yontem,o.durum FROM Odemeler o JOIN Siparisler s ON o.siparis_id=s.siparis_id WHERE s.musteri_id=${mid} ORDER BY o.odeme_id DESC`);
+  const topOd=qv(`SELECT ROUND(SUM(o.tutar),0) FROM Odemeler o JOIN Siparisler s ON o.siparis_id=s.siparis_id WHERE s.musteri_id=${mid}`);
+  const odMap={};
+  odemeler.values.forEach(r=>{odMap[r[0]]={tutar:r[1],yontem:r[2],durum:r[3]}});
+  const det=document.getElementById('mus-detail');
+  det.style.display='block';
+  det.innerHTML=`
+  <div class="card" style="border-top:3px solid #185FA5">
+    <div class="card-head">
+      <div class="card-head-icon" style="background:#E6F1FB;color:#0C447C"><i class="ti ti-history" aria-hidden="true"></i></div>
+      <span class="card-title">${ad} — Sipariş Geçmişi</span>
+      <span class="card-sub">${siparis.values.length} sipariş &nbsp;·&nbsp; Toplam Ödeme: <strong style="color:#085041">${fmt(topOd)}</strong></span>
+      <button onclick="document.getElementById('mus-detail').style.display='none'" style="margin-left:auto;background:#FCEBEB;border:none;cursor:pointer;color:#791F1F;font-size:13px;padding:4px 10px;border-radius:var(--border-radius-md)">✕ Kapat</button>
+    </div>
+    ${siparis.values.length===0?'<div class="empty">Bu müşteriye ait sipariş yok</div>':`
+    <div class="tbl-wrap"><table><thead><tr><th>#</th><th>Tarih</th><th>Durum</th><th>Kargo Firması</th><th>Takip No</th><th>Adres</th><th>Sipariş Tutarı</th><th>Ödeme Yöntemi</th><th>Ödeme Durumu</th></tr></thead><tbody>
+    ${siparis.values.map(r=>{
+      const od=odMap[r[0]]||null;
+      return`<tr>
+        <td style="color:#185FA5;font-weight:500">#${r[0]}</td>
+        <td style="font-size:12px;color:var(--color-text-secondary)">${(r[1]||'').slice(0,10)}</td>
+        <td>${durBadge(r[2])}</td>
+        <td style="font-size:12px;color:var(--color-text-secondary)">${r[3]||'—'}</td>
+        <td style="font-size:12px;font-family:var(--font-mono);color:#3C3489">${r[4]||'—'}</td>
+        <td style="font-size:12px;color:var(--color-text-secondary)">${r[6]||'—'}</td>
+        <td style="font-weight:500;color:#085041">${fmt(r[5])}</td>
+        <td>${od?`<span class="badge bp"><i class="ti ti-credit-card" aria-hidden="true"></i>${od.yontem}</span>`:'<span class="badge bn">—</span>'}</td>
+        <td>${od?`<span class="badge ${od.durum==='Basarili'?'bs':'bd'}">${od.durum==='Basarili'?'✓ Başarılı':'✗ Başarısız'}</span>`:'<span class="badge bw">Ödenmedi</span>'}</td>
+      </tr>`;
+    }).join('')}
+    </tbody></table></div>`}
+  </div>`;
+  det.scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+function r2(){
+  const data=q("SELECT u.urun_id,u.urun_adi,k.kategori_adi,u.birim_fiyat,u.stok_miktari,u.min_stok,COALESCE(SUM(sd.miktar),0)AS sat FROM Urunler u JOIN Kategoriler k ON u.kategori_id=k.kategori_id LEFT JOIN Siparis_Detaylari sd ON u.urun_id=sd.urun_id GROUP BY u.urun_id ORDER BY u.stok_miktari ASC");
+  const katlar=q("SELECT kategori_adi FROM Kategoriler").values.map(r=>r[0]);
+  document.getElementById('p2').innerHTML=`
+  <div class="card">
+    <div class="card-head"><div class="card-head-icon" style="background:#FAEEDA;color:#633806"><i class="ti ti-box" aria-hidden="true"></i></div><span class="card-title">Ürünler & Stok</span><span class="card-sub">${data.values.length} ürün</span></div>
+    <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+      <input class="search" style="margin:0;flex:1;min-width:160px" placeholder="Ürün ara..." oninput="filterTable('ut',this.value)">
+      <select onchange="filterCol('ut',2,this.value)"><option value="">Tüm Kategoriler</option>${katlar.map(k=>`<option>${k}</option>`).join('')}</select>
+    </div>
+    <div class="tbl-wrap"><table id="ut"><thead><tr><th>Ürün</th><th>Kategori</th><th>Fiyat</th><th>Stok</th><th>Durum</th><th>Satılan</th></tr></thead><tbody>
+    ${data.values.map(r=>{
+      const pct=Math.min(Math.round((r[4]/(r[5]*3||1))*100),100);
+      const col=r[4]===0?'#E24B4A':r[4]<=r[5]?'#E24B4A':r[4]<=r[5]*2?'#BA7517':'#639922';
+      return`<tr><td style="font-weight:500">${r[1]}</td><td><span class="badge bp">${r[2]}</span></td><td style="color:#185FA5;font-weight:500">${fmt(r[3])}</td><td><div class="urun-stok-bar-wrap"><span style="font-weight:500;color:${col};min-width:28px">${r[4]}</span><div class="progress-bar" style="width:50px"><div class="progress-fill" style="width:${pct}%;background:${col}"></div></div></div></td><td>${stokBadge(r[4],r[5])}</td><td><span class="badge bc">${r[6]}</span></td></tr>`;
+    }).join('')}
+    </tbody></table></div>
+  </div>`;
+}
+
+function r3(){
+  const data=q("SELECT s.siparis_id,m.ad||' '||m.soyad,s.siparis_tarihi,s.durum,kf.firma_adi,s.takip_no,s.toplam_tutar FROM Siparisler s JOIN Musteriler m ON s.musteri_id=m.musteri_id LEFT JOIN KargoFirmalari kf ON s.kargo_id=kf.kargo_id ORDER BY s.siparis_tarihi DESC");
+  document.getElementById('p3').innerHTML=`
+  <div class="card">
+    <div class="card-head"><div class="card-head-icon" style="background:#FAECE7;color:#712B13"><i class="ti ti-receipt" aria-hidden="true"></i></div><span class="card-title">Siparişler</span><span class="card-sub">${data.values.length} kayıt</span></div>
+    <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+      <input class="search" style="margin:0;flex:1;min-width:160px" placeholder="Müşteri veya takip no..." oninput="filterTable('st',this.value)">
+      <select onchange="filterCol('st',3,this.value)"><option value="">Tüm Durumlar</option>${['Beklemede','Onaylandi','Kargoda','Teslim Edildi','Iptal Edildi'].map(d=>`<option>${d}</option>`).join('')}</select>
+    </div>
+    <div class="tbl-wrap"><table id="st"><thead><tr><th>#</th><th>Müşteri</th><th>Tarih</th><th>Durum</th><th>Kargo</th><th>Takip No</th><th>Tutar</th></tr></thead><tbody>
+    ${data.values.map(r=>`<tr><td style="color:#185FA5;font-weight:500">#${r[0]}</td><td>${r[1]}</td><td style="font-size:12px;color:var(--color-text-secondary)">${(r[2]||'').slice(0,10)}</td><td>${durBadge(r[3])}</td><td style="font-size:12px;color:var(--color-text-secondary)">${r[4]||'—'}</td><td style="font-size:12px;font-family:var(--font-mono);color:#3C3489">${r[5]||'—'}</td><td style="font-weight:500;color:#085041">${fmt(r[6])}</td></tr>`).join('')}
+    </tbody></table></div>
+  </div>`;
+}
+
+function r4(){
+  const data=q("SELECT s.siparis_id,m.ad||' '||m.soyad,m.telefon,kf.firma_adi,s.takip_no,s.durum,s.siparis_tarihi,s.teslim_adresi,s.toplam_tutar FROM Siparisler s JOIN Musteriler m ON s.musteri_id=m.musteri_id LEFT JOIN KargoFirmalari kf ON s.kargo_id=kf.kargo_id WHERE s.durum IN('Onaylandi','Kargoda','Teslim Edildi') ORDER BY s.siparis_tarihi DESC");
+  document.getElementById('p4').innerHTML=`
+  <div class="card">
+    <div class="card-head"><div class="card-head-icon" style="background:#EAF3DE;color:#27500A"><i class="ti ti-truck" aria-hidden="true"></i></div><span class="card-title">Kargo Takip</span><span class="card-sub">${data.values.length} gönderi</span></div>
+    ${data.values.length===0?'<div class="empty">Aktif gönderi yok</div>':data.values.map(r=>`
+    <div class="kargo-card ${kCardClass(r[5])}">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px">
+        <div>
+          <div style="font-weight:500;font-size:14px">${r[1]}</div>
+          <div style="font-size:12px;margin-top:2px;opacity:.8">${r[3]||'—'} · <span style="font-family:var(--font-mono)">${r[4]||'—'}</span></div>
+        </div>
+        ${durBadge(r[5])}
+      </div>
+      <div class="ktrack">${kSteps(r[5])}</div>
+      <div style="display:flex;justify-content:space-between;font-size:12px;margin-top:4px;opacity:.8">
+        <span><i class="ti ti-map-pin" style="font-size:12px" aria-hidden="true"></i> ${r[7]||'—'}</span>
+        <span style="font-weight:500">${fmt(r[8])}</span>
+        <span>${(r[6]||'').slice(0,10)}</span>
+      </div>
+    </div>`).join('')}
+  </div>`;
+}
+
+function r5(){
+  const musRes=q("SELECT musteri_id,ad||' '||soyad FROM Musteriler");
+  const karRes=q("SELECT kargo_id,firma_adi FROM KargoFirmalari");
+  const urRes=q("SELECT urun_id,urun_adi,stok_miktari,birim_fiyat FROM Urunler WHERE stok_miktari>0");
+  document.getElementById('p5').innerHTML=`
+  <div class="card">
+    <div class="card-head"><div class="card-head-icon" style="background:#EEEDFE;color:#3C3489"><i class="ti ti-plus" aria-hidden="true"></i></div><span class="card-title">Yeni Sipariş</span></div>
+    <div id="ss"></div>
+    <div class="form-group"><label>Müşteri</label><select id="nm">${musRes.values.map(r=>`<option value="${r[0]}">${r[1]}</option>`).join('')}</select></div>
+    <div class="form-group"><label>Kargo Firması</label><select id="nk">${karRes.values.map(r=>`<option value="${r[0]}">${r[1]}</option>`).join('')}</select></div>
+    <div class="form-group"><label>Ürün</label><select id="nu">${urRes.values.map(r=>`<option value="${r[0]}" data-f="${r[3]}">${r[1]} — Stok: ${r[2]} — ${fmt(r[3])}</option>`).join('')}</select></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div class="form-group"><label>Miktar</label><input type="number" id="nmik" value="1" min="1"></div>
+      <div class="form-group"><label>İndirim (%)</label><input type="number" id="nind" value="0" min="0" max="100"></div>
+    </div>
+    <div class="form-group"><label>Teslimat Adresi</label><input type="text" id="nadr" placeholder="Adres girin..."></div>
+    <button class="btn btn-blue" onclick="siparisOlustur()"><i class="ti ti-check" aria-hidden="true"></i> Sipariş Oluştur</button>
+  </div>
+  <div class="card" id="tlog" style="display:none">
+    <div class="card-head"><div class="card-head-icon" style="background:#FAEEDA;color:#633806"><i class="ti ti-bolt" aria-hidden="true"></i></div><span class="card-title">Trigger Logu</span></div>
+    <div id="tlog-ic"></div>
+  </div>`;
+}
+
+function siparisOlustur(){
+  const mid=document.getElementById('nm').value,kid=document.getElementById('nk').value,uid=document.getElementById('nu').value;
+  const mik=parseInt(document.getElementById('nmik').value)||1,ind=parseFloat(document.getElementById('nind').value)||0;
+  const adr=document.getElementById('nadr').value||'Belirtilmedi';
+  const ss=document.getElementById('ss');
+  try{
+    const eskiStok=qv(`SELECT stok_miktari FROM Urunler WHERE urun_id=${uid}`);
+    const urunAdi=qv(`SELECT urun_adi FROM Urunler WHERE urun_id=${uid}`,'Ürün');
+    const fiyat=qv(`SELECT birim_fiyat FROM Urunler WHERE urun_id=${uid}`);
+    const tkn='TRK'+Date.now().toString().slice(-6);
+    ex(`INSERT INTO Siparisler(musteri_id,durum,kargo_id,takip_no,teslim_adresi)VALUES(${mid},'Beklemede',${kid},'${tkn}','${adr}')`);
+    const sid=qv("SELECT last_insert_rowid()");
+    ex(`INSERT INTO Siparis_Detaylari(siparis_id,urun_id,miktar,birim_fiyat,indirim_yuzdesi)VALUES(${sid},${uid},${mik},${fiyat},${ind})`);
+    const yeniStok=qv(`SELECT stok_miktari FROM Urunler WHERE urun_id=${uid}`);
+    const tutar=qv(`SELECT toplam_tutar FROM Siparisler WHERE siparis_id=${sid}`);
+    const t=new Date().toLocaleTimeString('tr-TR');
+    ss.innerHTML=`<div class="sbar sok"><i class="ti ti-check" aria-hidden="true"></i> Sipariş #${sid} oluşturuldu — ${fmt(tutar)}</div>`;
+    document.getElementById('tlog').style.display='block';
+    document.getElementById('tlog-ic').innerHTML=`
+      <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:0.5px solid var(--color-border-tertiary);font-size:13px"><span style="color:var(--color-text-secondary)">[${t}] trg_stok_kontrol</span><span class="badge bs"><i class="ti ti-check" aria-hidden="true"></i>PASS — stok: ${eskiStok}</span></div>
+      <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:0.5px solid var(--color-border-tertiary);font-size:13px"><span style="color:var(--color-text-secondary)">[${t}] trg_stok_dusur</span><span class="badge bi">${urunAdi}: ${eskiStok}→${yeniStok} (−${mik})</span></div>
+      <div style="display:flex;justify-content:space-between;padding:7px 0;font-size:13px"><span style="color:var(--color-text-secondary)">[${t}] trg_tutar</span><span class="badge bw">Tutar = ${fmt(tutar)}</span></div>`;
+    r0();r2();r3();r4();r5();
+  }catch(e){
+    ss.innerHTML=`<div class="sbar serr"><i class="ti ti-x" aria-hidden="true"></i> ${e.message}</div>`;
+    document.getElementById('tlog').style.display='block';
+    document.getElementById('tlog-ic').innerHTML=`<div style="padding:7px 0;font-size:13px"><span class="badge bd"><i class="ti ti-x" aria-hidden="true"></i>ABORT — ${e.message}</span></div>`;
+  }
+}
+
+initDB();
+</script>
+
+</body>
+</html>
